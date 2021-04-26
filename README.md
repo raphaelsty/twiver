@@ -40,7 +40,7 @@ export BEARER_TOKEN='<YOUR_BEARER_TOKEN>'
 >>> x
 {
     'created_at': datetime.datetime(2021, 4, 26, 22, 59, 16), 
-    'text': 'Cool Cool Cool Cool Cool.', 
+    'text': 'Brooklyn, Cool Cool Cool Cool Cool.', 
     'username': 'Jake Peralta', 
     'reply': False, 
     'id': '1386817182877822997', 
