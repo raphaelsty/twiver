@@ -60,8 +60,8 @@ class Twitter:
     >>> stream = stream.Twitter(
     ...     bearer_token = bearer_token,
     ...     sample_rules = [
-    ...         {"value": "paris lang:fr", "tag": "Paris fr"},
-    ...         {"value": "paris lang:en", "tag": "Paris en"},
+    ...         {"value": "paris lang:fr", "tag": "Tweets that mention Paris in French."},
+    ...         {"value": "paris lang:en", "tag": "Tweets that mention Paris in English."},
     ...     ],
     ...     delay=datetime.timedelta(seconds=20),
     ... )

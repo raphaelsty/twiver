@@ -28,8 +28,8 @@ export BEARER_TOKEN='<YOUR_BEARER_TOKEN>'
 >>> stream = stream.Twitter(
 ...     bearer_token = bearer_token,
 ...     sample_rules = [
-...         {"value": "paris lang:fr", "tag": "Paris fr"},
-...         {"value": "paris lang:en", "tag": "Paris en"},
+...         {"value": "Brooklyn lang:fr", "tag": "Tweets that mention Brooklyn in French."},
+...         {"value": "Brooklyn lang:en", "tag": "Tweets that mention Brooklyn in English."},
 ...     ],
 ...     delay=datetime.timedelta(seconds=20),
 ... )
@@ -38,5 +38,19 @@ export BEARER_TOKEN='<YOUR_BEARER_TOKEN>'
 ...     break
 
 >>> x
-{'created_at': datetime.datetime(2021, 4, 26, 22, 59, 16), 'text': 'Going to the toilets.', 'username': 'XXXXX', 'reply': False, 'id': '1386817182877822997', 'retweet_count': 0, 'reply_count': 0, 'like_count': 0, 'quote_count': 0, 'followers_count': 292, 'following_count': 691, 'tweet_count': 2803, 'listed_count': 0}
+{
+    'created_at': datetime.datetime(2021, 4, 26, 22, 59, 16), 
+    'text': 'Cool Cool Cool Cool Cool.', 
+    'username': 'Jake Peralta', 
+    'reply': False, 
+    'id': '1386817182877822997', 
+    'retweet_count': 0, 
+    'reply_count': 0, 
+    'like_count': 0, 
+    'quote_count': 0, 
+    'followers_count': 292, 
+    'following_count': 691, 
+    'tweet_count': 2803, 
+    'listed_count': 0
+}
 ```
