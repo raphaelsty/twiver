@@ -149,7 +149,10 @@ class Twitter:
             )
         for response_line in response.iter_lines():
             if response_line:
-                yield self.process(json.loads(response_line))
+                tweet = json.loads(response_line)
+                # Remove RT from incoming stream.
+                if "RT @" not in tweet["data"]["text"]:
+                    yield self.process(tweet)
 
     def targets(self, key_old, i_old: int, x_old):
         """Retrieve tweets."""
