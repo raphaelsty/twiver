@@ -53,7 +53,6 @@ class Twitter:
 
     Examples
     --------
-
     >>> from twiver import stream
     >>> import datetime
     >>> import os
