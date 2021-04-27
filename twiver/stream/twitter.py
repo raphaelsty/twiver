@@ -157,13 +157,15 @@ class Twitter:
 
         if len(self.y_queue) >= self.maximum_header_size:
             response = requests.get(
-                f"https://api.twitter.com/2/tweets?tweet.fields=user.fields=public_metrics&ids={','.join(list(self.y_queue.keys()))}",
+                f"https://api.twitter.com/2/tweets?tweet.fields=created_at,public_metrics,entities,in_reply_to_user_id&expansions=author_id&user.fields=public_metrics&ids={','.join(list(self.y_queue.keys()))}",
                 headers=self.headers,
             )
-            for tweet in json.loads(response.text):
-                y_old = tweet["data"]["public_metrics"]["retweet_count"]
-                i_old, x_old = self.y_queue[tweet["data"]["id"]]
-                yield i_old, x_old, y_old
+            tweets = json.loads(response.text)
+            if "data" in tweets:
+                for tweet in tweets["data"]:
+                    y_old = tweet["public_metrics"]["retweet_count"]
+                    i_old, x_old = self.y_queue[tweet["id"]]
+                    yield i_old, x_old, y_old
 
             self.y_queue = {}
 
@@ -250,7 +252,7 @@ class Twitter:
                 if t_expire > t:
                     break
 
-                yield from targets(key_old, i_old, x_old)
+                yield from self.targets(key_old, i_old, x_old)
 
                 del mementos[0]
 
