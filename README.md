@@ -31,7 +31,7 @@ export BEARER_TOKEN='<YOUR_BEARER_TOKEN>'
 ...         {"value": "Brooklyn lang:fr", "tag": "Tweets that mention Brooklyn in French."},
 ...         {"value": "Brooklyn lang:en", "tag": "Tweets that mention Brooklyn in English."},
 ...     ],
-...     delay=datetime.timedelta(seconds=20),
+...     delay = datetime.timedelta(seconds=20),
 ... )
 
 >>> for i, x, y in stream:
