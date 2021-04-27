@@ -1,6 +1,6 @@
 # Twiver
 
-An infinite stream connected to Twitter and focusing on Retweets forecasting for River.  
+An infinite stream connected to Twitter and focusing on Retweets forecasting for [River](https://github.com/online-ml/river).  
 
 #### Installation 🤖
 
