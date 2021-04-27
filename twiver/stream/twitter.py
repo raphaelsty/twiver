@@ -25,10 +25,6 @@ class Twitter:
             Token given by twitter developper app.
         sample_rule
             Set of rules to filter stream of tweets.
-        maximum_header_size
-            Number of tweets needed make a request to Tweeter to get the ground
-            truth. Small value of maximum_header_size may lead to a 429 Too Many Requests error.
-            Also the API of Tweeter limit the maximum header size.
         moment
             The attribute used for measuring time. If a callable is passed, then it is expected
             to take as input a `dict` of features. If `None`, then the observations are implicitly
@@ -43,6 +39,13 @@ class Twitter:
             the relevant field from the features. If `None` is passed, then no delay will be used,
             which leads to doing standard online validation. If a scalar is passed, such an `int`
             or a `datetime.timedelta`, then the delay is constant.
+        minimum_header_size
+            Minimum number of tweets that are available to update the model to make an http request
+            to Twitter. Small value of minimum_header_size may lead to a 429 Too Many Requests
+            error.
+        maximum_header_size
+            Maximum number of tweets per request to the twitter API to get the ground truth.
+            Twitter limit the maximum header size.
         copy
             If `True`, then a separate copy of the features are yielded the second time
             around. This ensures that inadvertent modifications in downstream code don't have any
@@ -77,15 +80,17 @@ class Twitter:
 
     def __init__(
         self,
-        bearer_token,
-        sample_rules,
-        delay,
-        maximum_header_size=100,
+        bearer_token: str,
+        sample_rules: typing.List,
+        delay: typing.Union[str, int, dt.timedelta, typing.Callable],
+        minimum_header_size: int = 10,
+        maximum_header_size: int = 100,
         copy: bool = True,
     ):
         self.sample_rules = sample_rules
         self.delay = delay
         self.copy = copy
+        self.minimum_header_size = minimum_header_size
         self.maximum_header_size = maximum_header_size
 
         self.key = "id"
@@ -97,7 +102,7 @@ class Twitter:
         self.y_queue = {}
 
     @staticmethod
-    def create_headers(bearer_token):
+    def create_headers(bearer_token: str):
         return {"Authorization": f"Bearer {bearer_token}"}
 
     def get_rules(self):
@@ -110,7 +115,7 @@ class Twitter:
             )
         return response.json()
 
-    def delete_all_rules(self, rules):
+    def delete_all_rules(self, rules: typing.List):
         if rules is None or "data" not in rules:
             return None
 
@@ -154,30 +159,35 @@ class Twitter:
                 if "RT @" not in tweet["data"]["text"]:
                     yield self.process(tweet)
 
-    def targets(self, key_old, i_old: int, x_old):
+    def targets(self, key_old: str, i_old: int, x_old: typing.Dict):
         """Retrieve tweets."""
         self.y_queue[key_old] = (i_old, x_old)
 
-        if len(self.y_queue) >= self.maximum_header_size:
+        if len(self.y_queue) >= self.minimum_header_size:
+
+            ids = list(self.y_queue.keys())[: self.maximum_header_size]
             response = requests.get(
-                f"https://api.twitter.com/2/tweets?tweet.fields=created_at,public_metrics,entities,in_reply_to_user_id&expansions=author_id&user.fields=public_metrics&ids={','.join(list(self.y_queue.keys()))}",
+                f"https://api.twitter.com/2/tweets?tweet.fields=created_at,public_metrics,entities,in_reply_to_user_id&expansions=author_id&user.fields=public_metrics&ids={','.join(ids)}",
                 headers=self.headers,
             )
             tweets = json.loads(response.text)
             if "data" in tweets:
                 for tweet in tweets["data"]:
                     y_old = tweet["public_metrics"]["retweet_count"]
-                    i_old, x_old = self.y_queue[tweet["id"]]
+                    i_old, x_old = self.y_queue.pop(tweet["id"])
                     yield i_old, x_old, y_old
 
-            self.y_queue = {}
+            # Drop deleted tweets from the queue.
+            for id in ids:
+                if id in self.y_queue:
+                    self.y_queue.pop(id)
 
     @staticmethod
-    def format_date(date):
+    def format_date(date: str):
         date = date.split(".")[0].replace("T", " ")
         return dt.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
 
-    def process(self, tweet):
+    def process(self, tweet: typing.Dict):
         x = {}
         x["created_at"] = self.format_date(tweet["data"]["created_at"])
         x["text"] = tweet["data"]["text"]
