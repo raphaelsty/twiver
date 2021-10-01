@@ -39,6 +39,8 @@ class Twitter:
             the relevant field from the features. If `None` is passed, then no delay will be used,
             which leads to doing standard online validation. If a scalar is passed, such an `int`
             or a `datetime.timedelta`, then the delay is constant.
+        target
+            Target variable defined in
         minimum_header_size
             Minimum number of tweets that are available to update the model to make an http request
             to Twitter. Small value of minimum_header_size may lead to a 429 Too Many Requests
@@ -66,6 +68,7 @@ class Twitter:
     ...         {"value": "paris lang:en", "tag": "Tweets that mention Paris in English."},
     ...     ],
     ...     delay=datetime.timedelta(seconds=20),
+    ...     target = "retweet_count"
     ... )
 
     >>> for i, x, y in stream:
@@ -82,10 +85,16 @@ class Twitter:
         bearer_token: str,
         sample_rules: typing.List,
         delay: typing.Union[str, int, dt.timedelta, typing.Callable],
+        target: str = "retweet_count",
         minimum_header_size: int = 10,
         maximum_header_size: int = 100,
         copy: bool = True,
     ):
+
+        targets = ["retweet_count", "reply_count", "like_count", "quote_count"]
+        if target not in targets:
+            raise ValueError(f"Target attribute must be in {' / '.join(targets)}")
+
         self.sample_rules = sample_rules
         self.delay = delay
         self.copy = copy
@@ -193,6 +202,7 @@ class Twitter:
         x["username"] = tweet["includes"]["users"][0]["username"]
         x["reply"] = "in_reply_to_user_id" in tweet["data"]
         x["id"] = tweet["data"]["id"]
+        x["tag"] = tweet["matching_rules"][0]["tag"]
         x.update(tweet["data"]["public_metrics"])
         x.update(tweet["includes"]["users"][0]["public_metrics"])
         return x
